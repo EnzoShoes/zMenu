@@ -7,7 +7,6 @@ import fr.maxlego08.menu.inventory.inventories.InventoryDefault;
 import fr.maxlego08.menu.requirement.ZPermissible;
 import fr.maxlego08.menu.zcore.logger.Logger;
 import fr.maxlego08.menu.zcore.utils.ZUtils;
-import jdk.jpackage.internal.Log;
 import org.bukkit.entity.Player;
 
 import java.util.List;

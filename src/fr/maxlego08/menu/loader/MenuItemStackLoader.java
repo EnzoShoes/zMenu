@@ -6,7 +6,6 @@ import fr.maxlego08.menu.exceptions.ItemEnchantException;
 import fr.maxlego08.menu.zcore.utils.*;
 import fr.maxlego08.menu.zcore.utils.attribute.Attribute;
 import fr.maxlego08.menu.zcore.utils.attribute.IAttribute;
-import fr.maxlego08.menu.zcore.utils.attribute.ZAttribute;
 import fr.maxlego08.menu.zcore.utils.loader.Loader;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -146,38 +145,16 @@ public class MenuItemStackLoader extends ZUtils implements Loader<MenuItemStack>
 
         List<ItemFlag> flags = configuration.getStringList(path + "flags").stream().map(this::getFlag).collect(Collectors.toList());
 
-        List<Map<String, Object>> attributeModifiers = new ArrayList<>();
+        List<IAttribute> attributeModifiers = new ArrayList<>();
 
         if (configuration.contains(path + "attributes")) {
             List<Map<String, Object>> attributesFromConfig = (List<Map<String, Object>>) configuration.getList(path + "attributes");
             if (attributesFromConfig != null) {
                 for (Map<String, Object> attributeJson : attributesFromConfig) {
-                    attributeJson.putIfAbsent("uuid", UUID.randomUUID().toString());
-                    attributeJson.putIfAbsent("name", "zmenu:modifier");
-                    attributeJson.put("attribute", Attribute.valueOf((String) attributeJson.get("attribute")).getKey());
-                    attributeModifiers.add(attributeJson);
+                    attributeModifiers.add(Attribute.deserialize(attributeJson));
                 }
             }
         }
-        /*                attributeJson.putIfAbsent("uuid", UUID.randomUUID().toString());
-                        attributeJson.putIfAbsent("name", "zmenu:modifier");
-
-                        Class<?> attributeModifierClazz = Class.forName("org.bukkit.attribute.AttributeModifier");
-                        Method deserialize = attributeModifierClazz.getMethod("deserialize", Map.class);
-                        Object attributeModifier = deserialize.invoke(null, attributeJson);
-
-                        Class<?> attributeClazz = Class.forName("org.bukkit.attribute.Attribute");
-                        Method valueOf = attributeClazz.getMethod("valueOf", String.class);
-                        Object attribute = valueOf.invoke(attributeClazz, (String) attributeJson.get("attribute"));
-
-                        attributeModifiers.put(attribute, attributeModifier);
-                    }
-                    catch (ReflectiveOperationException e) {
-                        e.printStackTrace();
-                    }
-				}
-            }
-        }*/
 
         menuItemStack.setEnchantments(enchantments);
         menuItemStack.setFlags(flags);

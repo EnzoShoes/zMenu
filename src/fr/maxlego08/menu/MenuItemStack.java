@@ -17,13 +17,13 @@ import fr.maxlego08.menu.zcore.utils.Firework;
 import fr.maxlego08.menu.zcore.utils.LeatherArmor;
 import fr.maxlego08.menu.zcore.utils.Potion;
 import fr.maxlego08.menu.zcore.utils.ZUtils;
+import fr.maxlego08.menu.zcore.utils.attribute.AttributeApplier;
+import fr.maxlego08.menu.zcore.utils.attribute.IAttribute;
 import fr.maxlego08.menu.zcore.utils.meta.Meta;
 import fr.maxlego08.menu.zcore.utils.nms.ItemStackCompound;
 import fr.maxlego08.menu.zcore.utils.nms.NMSUtils;
 import fr.maxlego08.menu.zcore.utils.nms.NmsVersion;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -56,7 +56,7 @@ public class MenuItemStack extends ZUtils {
     private boolean isGlowing;
     private String modelID;
     private Map<Enchantment, Integer> enchantments = new HashMap<>();
-    private List<Map<String, Object>> attributes = new ArrayList<>();
+    private List<IAttribute> attributes = new ArrayList<>();
     private Banner banner;
     private Firework firework;
     private LeatherArmor leatherArmor;
@@ -252,46 +252,14 @@ public class MenuItemStack extends ZUtils {
             }
         });
 
-
-        //this.attributes.forEach(itemMeta::addAttributeModifier);
-
-//        try {
-//            Class<?> attributeClazz = Class.forName("Attribute");
-//            Class<?> attributeModifierClazz = Class.forName("AttributeModifier");
-//            Method addAttributeModifier = ItemMeta.class.getMethod("addAttributeModifier", attributeClazz, attributeModifierClazz);
-//            for (Map.Entry<Object, Object> attribute : this.attributes.entrySet()) {
-//                addAttributeModifier.invoke(itemMeta, attribute.getKey(), attribute.getValue());
-//            }
-//        } catch (ReflectiveOperationException ignored) {
-//		}
-
 		this.flags.forEach(itemMeta::addItemFlags);
 
-        //itemStack.setItemMeta(itemMeta);
+        itemStack.setItemMeta(itemMeta);
 
-        System.out.println("material: " + this.getMaterial() + ", attributes: " + attributes);
-
-        NBT.modify(itemStack, nbt -> {
-            ReadWriteNBTCompoundList attributeModifiers = nbt.getCompoundList("AttributeModifiers");
-            for (Map<String, Object> attribute : this.attributes) {
-                ReadWriteNBT compound = attributeModifiers.addCompound();
-                compound.setString("Name", (String) attribute.get("name"));
-                compound.setUUID("UUID", UUID.fromString((String) attribute.get("uuid")));
-                compound.setString("AttributeName", "minecraft:" + attribute.get("attribute"));
-                compound.setDouble("Amount", NumberConversions.toDouble(attribute.get("amount")));
-                if (attribute.containsKey("slot")) {
-                    compound.setString("Slot", (String) attribute.get("slot"));
-                }
-            }
-        });
+        AttributeApplier attributeApplier = new AttributeApplier(attributes);
+        attributeApplier.apply(itemStack);
 
         NBTItem nbtItem = new NBTItem(itemStack);
-        Set<String> keys = nbtItem.getKeys();
-
-        System.out.println("NBT Data for the ItemStack:");
-        for (String key : keys) {
-            System.out.println(key + ": " + nbtItem.getObject(key, Object.class).toString());
-        }
 
         player.getInventory().addItem(itemStack);
 
@@ -483,14 +451,14 @@ public class MenuItemStack extends ZUtils {
     /**
      * @return the attributes
      */
-    public List<Map<String, Object>> getAttributes() {
+    public List<IAttribute> getAttributes() {
         return attributes;
     }
 
     /**
-     * @param attributes the attributes to set. Key: Nbt tag name, Value: Nbt tag value
+     * @param attributes the attributes to set. Key: Attribute, Value: AttributeModifier
      */
-    public void setAttributes(List<Map<String, Object>> attributes) {
+    public void setAttributes(List<IAttribute> attributes) {
         this.attributes = attributes;
     }
 
