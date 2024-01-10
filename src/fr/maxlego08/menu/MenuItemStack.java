@@ -456,7 +456,7 @@ public class MenuItemStack extends ZUtils {
     }
 
     /**
-     * @param attributes the attributes to set. Key: Attribute, Value: AttributeModifier
+     * @param attributes the attributes to set.
      */
     public void setAttributes(List<IAttribute> attributes) {
         this.attributes = attributes;
