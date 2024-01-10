@@ -1,5 +1,12 @@
 package fr.maxlego08.menu;
 
+import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.NBTCompound;
+import de.tr7zw.changeme.nbtapi.NBTItem;
+import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBTCompoundList;
+import de.tr7zw.changeme.nbtapi.iface.ReadableItemNBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadableNBTList;
 import fr.maxlego08.menu.api.InventoryManager;
 import fr.maxlego08.menu.api.loader.MaterialLoader;
 import fr.maxlego08.menu.save.Config;
@@ -11,6 +18,7 @@ import fr.maxlego08.menu.zcore.utils.LeatherArmor;
 import fr.maxlego08.menu.zcore.utils.Potion;
 import fr.maxlego08.menu.zcore.utils.ZUtils;
 import fr.maxlego08.menu.zcore.utils.meta.Meta;
+import fr.maxlego08.menu.zcore.utils.nms.ItemStackCompound;
 import fr.maxlego08.menu.zcore.utils.nms.NMSUtils;
 import fr.maxlego08.menu.zcore.utils.nms.NmsVersion;
 import org.bukkit.Material;
@@ -23,9 +31,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.util.NumberConversions;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
 
 public class MenuItemStack extends ZUtils {
 
@@ -44,7 +56,7 @@ public class MenuItemStack extends ZUtils {
     private boolean isGlowing;
     private String modelID;
     private Map<Enchantment, Integer> enchantments = new HashMap<>();
-    private Map<Attribute, AttributeModifier> attributes = new HashMap<>();
+    private List<Map<String, Object>> attributes = new ArrayList<>();
     private Banner banner;
     private Firework firework;
     private LeatherArmor leatherArmor;
@@ -240,11 +252,48 @@ public class MenuItemStack extends ZUtils {
             }
         });
 
-        this.attributes.forEach(itemMeta::addAttributeModifier);
 
-        this.flags.forEach(itemMeta::addItemFlags);
+        //this.attributes.forEach(itemMeta::addAttributeModifier);
 
-        itemStack.setItemMeta(itemMeta);
+//        try {
+//            Class<?> attributeClazz = Class.forName("Attribute");
+//            Class<?> attributeModifierClazz = Class.forName("AttributeModifier");
+//            Method addAttributeModifier = ItemMeta.class.getMethod("addAttributeModifier", attributeClazz, attributeModifierClazz);
+//            for (Map.Entry<Object, Object> attribute : this.attributes.entrySet()) {
+//                addAttributeModifier.invoke(itemMeta, attribute.getKey(), attribute.getValue());
+//            }
+//        } catch (ReflectiveOperationException ignored) {
+//		}
+
+		this.flags.forEach(itemMeta::addItemFlags);
+
+        //itemStack.setItemMeta(itemMeta);
+
+        System.out.println("material: " + this.getMaterial() + ", attributes: " + attributes);
+
+        NBT.modify(itemStack, nbt -> {
+            ReadWriteNBTCompoundList attributeModifiers = nbt.getCompoundList("AttributeModifiers");
+            for (Map<String, Object> attribute : this.attributes) {
+                ReadWriteNBT compound = attributeModifiers.addCompound();
+                compound.setString("Name", (String) attribute.get("name"));
+                compound.setUUID("UUID", UUID.fromString((String) attribute.get("uuid")));
+                compound.setString("AttributeName", "minecraft:" + attribute.get("attribute"));
+                compound.setDouble("Amount", NumberConversions.toDouble(attribute.get("amount")));
+                if (attribute.containsKey("slot")) {
+                    compound.setString("Slot", (String) attribute.get("slot"));
+                }
+            }
+        });
+
+        NBTItem nbtItem = new NBTItem(itemStack);
+        Set<String> keys = nbtItem.getKeys();
+
+        System.out.println("NBT Data for the ItemStack:");
+        for (String key : keys) {
+            System.out.println(key + ": " + nbtItem.getObject(key, Object.class).toString());
+        }
+
+        player.getInventory().addItem(itemStack);
 
         if (!needPlaceholderAPI && Config.enableCacheItemStack) this.cacheItemStack = itemStack;
         return itemStack;
@@ -434,14 +483,14 @@ public class MenuItemStack extends ZUtils {
     /**
      * @return the attributes
      */
-    public Map<Attribute, AttributeModifier> getAttributes() {
+    public List<Map<String, Object>> getAttributes() {
         return attributes;
     }
 
     /**
-     * @param attributes the attributes to set
+     * @param attributes the attributes to set. Key: Nbt tag name, Value: Nbt tag value
      */
-    public void setAttributes(Map<Attribute, AttributeModifier> attributes) {
+    public void setAttributes(List<Map<String, Object>> attributes) {
         this.attributes = attributes;
     }
 
