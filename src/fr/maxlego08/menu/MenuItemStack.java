@@ -1,18 +1,10 @@
 package fr.maxlego08.menu;
 
-import de.tr7zw.changeme.nbtapi.NBT;
-import de.tr7zw.changeme.nbtapi.NBTCompound;
-import de.tr7zw.changeme.nbtapi.NBTItem;
-import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBT;
-import de.tr7zw.changeme.nbtapi.iface.ReadWriteNBTCompoundList;
-import de.tr7zw.changeme.nbtapi.iface.ReadableItemNBT;
-import de.tr7zw.changeme.nbtapi.iface.ReadableNBTList;
 import fr.maxlego08.menu.api.InventoryManager;
 import fr.maxlego08.menu.api.loader.MaterialLoader;
 import fr.maxlego08.menu.save.Config;
 import fr.maxlego08.menu.zcore.logger.Logger;
 import fr.maxlego08.menu.zcore.utils.Banner;
-import fr.maxlego08.menu.zcore.utils.ElapsedTime;
 import fr.maxlego08.menu.zcore.utils.Firework;
 import fr.maxlego08.menu.zcore.utils.LeatherArmor;
 import fr.maxlego08.menu.zcore.utils.Potion;
@@ -20,7 +12,6 @@ import fr.maxlego08.menu.zcore.utils.ZUtils;
 import fr.maxlego08.menu.zcore.utils.attribute.AttributeApplier;
 import fr.maxlego08.menu.zcore.utils.attribute.IAttribute;
 import fr.maxlego08.menu.zcore.utils.meta.Meta;
-import fr.maxlego08.menu.zcore.utils.nms.ItemStackCompound;
 import fr.maxlego08.menu.zcore.utils.nms.NMSUtils;
 import fr.maxlego08.menu.zcore.utils.nms.NmsVersion;
 import org.bukkit.Material;
@@ -31,13 +22,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.util.NumberConversions;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Function;
 
 public class MenuItemStack extends ZUtils {
 
@@ -258,10 +245,6 @@ public class MenuItemStack extends ZUtils {
 
         AttributeApplier attributeApplier = new AttributeApplier(attributes);
         attributeApplier.apply(itemStack);
-
-        NBTItem nbtItem = new NBTItem(itemStack);
-
-        player.getInventory().addItem(itemStack);
 
         if (!needPlaceholderAPI && Config.enableCacheItemStack) this.cacheItemStack = itemStack;
         return itemStack;

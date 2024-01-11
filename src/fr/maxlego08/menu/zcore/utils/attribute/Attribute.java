@@ -69,7 +69,7 @@ public class Attribute implements IAttribute {
 
 		private final String key;
 
-		private Type(String key) {
+		Type(String key) {
 			this.key = key;
 		}
 
@@ -80,27 +80,25 @@ public class Attribute implements IAttribute {
 	}
 
 	@NotNull
-	public static Attribute.Builder builder() {
-		return new Attribute.Builder();
+	public static Attribute.Builder builder(Attribute.Type type, double amount) {
+		return new Attribute.Builder(type, amount);
 	}
 
 	public static final class Builder {
 		Attribute.Type type;
+		double amount;
 		UUID uuid = java.util.UUID.randomUUID();
 		String name = "zmenu:modifier";
-		double amount = 1.0D;
 		EquipmentSlot slot = null;
 
-		Builder() {}
+		Builder(Attribute.Type type, double amount) {
+			this.amount = amount;
+			this.type = type;
+		}
 
 		@NotNull
 		public Attribute build() {
 			return new Attribute(type, uuid, name, amount, slot);
-		}
-
-		public Attribute.Builder withType(Attribute.Type type) {
-			this.type = type;
-			return this;
 		}
 
 		public Attribute.Builder withUUID(UUID uuid) {
@@ -113,17 +111,11 @@ public class Attribute implements IAttribute {
 			return this;
 		}
 
-		public Attribute.Builder withAmount(double amount) {
-			this.amount = amount;
-			return this;
-		}
-
 		public Attribute.Builder withSlot(EquipmentSlot slot) {
 			this.slot = slot;
 			return this;
 		}
 	}
-
 
 	private static final String TYPE = "attribute";
 	private static final String UUID = "uuid";
@@ -139,7 +131,7 @@ public class Attribute implements IAttribute {
 
 	Attribute(@NotNull Attribute.Type type, UUID uuid, String name, double amount, EquipmentSlot slot) {
 		this.type = type;
-		this.uuid = uuid == null ? java.util.UUID.randomUUID() : uuid;
+		this.uuid = uuid;
 		this.name = name;
 		this.amount = amount;
 		this.slot = slot;
@@ -172,23 +164,20 @@ public class Attribute implements IAttribute {
 
 	@NotNull
 	public static Attribute deserialize(@NotNull Map<String, Object> map) {
-		// Check if the map contains the required 'type' attribute
 		if (!map.containsKey(TYPE) || map.get(TYPE) == null) {
 			throw new IllegalArgumentException(String.format("The '%s' field is missing or null", TYPE));
 		}
+		Attribute.Type type = Attribute.Type.valueOf((String) map.get(TYPE));
 
 		if (!map.containsKey(AMOUNT) || map.get(AMOUNT) == null) {
 			throw new IllegalArgumentException(String.format("The '%s' field is missing or null", AMOUNT));
 		}
+		double amount = NumberConversions.toDouble(map.get(AMOUNT));
 
-		Attribute.Builder builder = builder()
-				.withType(Attribute.Type.valueOf((String) map.get(TYPE)));
+		Attribute.Builder builder = builder(type, amount);
 
 		if (map.containsKey(NAME) && map.get(NAME) != null) {
 			builder.withName((String) map.get(NAME));
-		}
-		if (map.containsKey(AMOUNT) && map.get(AMOUNT) != null) {
-			builder.withAmount(NumberConversions.toDouble(map.get(AMOUNT)));
 		}
 		if (map.containsKey(SLOT) && map.get(SLOT) != null) {
 			builder.withSlot(EquipmentSlot.valueOf((String) map.get(SLOT)));

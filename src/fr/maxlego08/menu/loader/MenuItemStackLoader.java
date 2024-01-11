@@ -150,8 +150,8 @@ public class MenuItemStackLoader extends ZUtils implements Loader<MenuItemStack>
         if (configuration.contains(path + "attributes")) {
             List<Map<String, Object>> attributesFromConfig = (List<Map<String, Object>>) configuration.getList(path + "attributes");
             if (attributesFromConfig != null) {
-                for (Map<String, Object> attributeJson : attributesFromConfig) {
-                    attributeModifiers.add(Attribute.deserialize(attributeJson));
+                for (Map<String, Object> attributeMap : attributesFromConfig) {
+                    attributeModifiers.add(Attribute.deserialize(attributeMap));
                 }
             }
         }
